@@ -4,3 +4,7 @@ logs:
   otlp-endpoint: "http://localhost:4318/v1/logs"
 
 metrics:
+  otlp-endpoint: "http://localhost:4318/v1/metrics"
+  export-interval-seconds: 60
+  types:
+    player-count: true

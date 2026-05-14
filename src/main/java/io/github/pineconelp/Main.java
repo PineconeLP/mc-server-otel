@@ -1,11 +1,15 @@
 package io.github.pineconelp;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
-import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
@@ -15,17 +19,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
   private OpenTelemetrySdk otelSdk;
   private ConsoleLogOtelBridge appender;
+  private ObservableDoubleGauge playerCountGauge;
 
   @Override
   public void onEnable() {
     saveDefaultConfig();
-    startOtelBridge(
-        getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs"),
-        getConfig().getString("service-name", "minecraft-server"));
+    startOtelBridge();
   }
 
   @Override
   public void onDisable() {
+    if (playerCountGauge != null) {
+      playerCountGauge.close();
+      playerCountGauge = null;
+    }
+
     if (appender != null) {
       getServerConsoleLogger().removeAppender(appender);
       appender.stop();
@@ -50,9 +58,7 @@ public class Main extends JavaPlugin {
 
       onDisable();
       reloadConfig();
-      startOtelBridge(
-          getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs"),
-          getConfig().getString("service-name", "minecraft-server"));
+      startOtelBridge();
 
       sender.sendMessage("Reloaded McServerOtel.");
 
@@ -64,7 +70,13 @@ public class Main extends JavaPlugin {
     return true;
   }
 
-  private void startOtelBridge(String endpoint, String serviceName) {
+  private void startOtelBridge() {
+    String serviceName = getConfig().getString("service-name", "minecraft-server");
+    String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
+    String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
+    int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
+    boolean playerCountEnabled = getConfig().getBoolean("metrics.types.player-count", true);
+
     Resource resource = Resource.getDefault().toBuilder()
         .put(AttributeKey.stringKey("service.name"), serviceName)
         .build();
@@ -74,8 +86,17 @@ public class Main extends JavaPlugin {
             .setResource(resource)
             .addLogRecordProcessor(BatchLogRecordProcessor.builder(
                 OtlpHttpLogRecordExporter.builder()
-                    .setEndpoint(endpoint)
+                    .setEndpoint(logsEndpoint)
                     .build())
+                .build())
+            .build())
+        .setMeterProvider(SdkMeterProvider.builder()
+            .setResource(resource)
+            .registerMetricReader(PeriodicMetricReader.builder(
+                OtlpHttpMetricExporter.builder()
+                    .setEndpoint(metricsEndpoint)
+                    .build())
+                .setInterval(metricsInterval, java.util.concurrent.TimeUnit.SECONDS)
                 .build())
             .build())
         .build();
@@ -86,6 +107,15 @@ public class Main extends JavaPlugin {
     appender.start();
 
     getServerConsoleLogger().addAppender(appender);
+
+    if (playerCountEnabled) {
+      playerCountGauge = otelSdk.getMeter("mc-server-otel")
+          .gaugeBuilder("minecraft.players.online")
+          .setDescription("Number of players currently online")
+          .setUnit("{players}")
+          .buildWithCallback(measurement ->
+              measurement.record(getServer().getOnlinePlayers().size()));
+    }
   }
 
   private static org.apache.logging.log4j.core.Logger getServerConsoleLogger() {
