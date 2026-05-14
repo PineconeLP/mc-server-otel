@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'com.gradleup.shadow' version '8.3.5'
+}
+
+group = 'io.github.pineconelp'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
+
+    implementation 'io.opentelemetry:opentelemetry-sdk:1.38.0'
+    implementation('io.opentelemetry:opentelemetry-exporter-otlp:1.38.0') {
+        exclude group: 'io.opentelemetry', module: 'opentelemetry-exporter-sender-okhttp'
+    }
+    implementation 'io.opentelemetry:opentelemetry-exporter-sender-jdk:1.38.0'
+}
+
+processResources {
+    filesMatching('plugin.yml') {
+        expand version: project.version
+    }
+}
+
+shadowJar {
+    archiveClassifier = ''
+    relocate 'io.opentelemetry', 'io.github.pineconelp.shaded.opentelemetry'
+    mergeServiceFiles()
+}
+
+assemble.dependsOn shadowJar
+

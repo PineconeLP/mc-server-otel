@@ -1,0 +1,17 @@
+name: McServerOtel
+version: ${version}
+main: io.github.pineconelp.Main
+api-version: 1.20
+description: Drop-in OpenTelemetry instrumentation for Minecraft servers. Forwards console logs and exposes custom metrics via OTLP.
+authors: [pineconelp]
+
+commands:
+  otel:
+    description: Reload the McServerOtel configuration.
+    usage: /otel reload
+    permission: otel.reload
+
+permissions:
+  otel.reload:
+    description: Allows reloading the McServerOtel config.
+    default: op
