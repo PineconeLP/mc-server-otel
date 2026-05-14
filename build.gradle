@@ -43,3 +43,7 @@ shadowJar {
 
 assemble.dependsOn shadowJar
 
+task deploy(type: Exec, dependsOn: shadowJar) {
+    commandLine './scripts/deploy.sh'
+}
+

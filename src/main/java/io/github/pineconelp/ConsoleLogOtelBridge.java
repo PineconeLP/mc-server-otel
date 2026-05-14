@@ -9,11 +9,11 @@ import org.apache.logging.log4j.core.config.Property;
 
 import java.util.concurrent.TimeUnit;
 
-class OtelBridge extends AbstractAppender {
+class ConsoleLogOtelBridge extends AbstractAppender {
   private final Logger otelLogger;
 
-  public OtelBridge(Logger otelLogger) {
-    super("OtelBridge", null, null, true, Property.EMPTY_ARRAY);
+  public ConsoleLogOtelBridge(Logger otelLogger) {
+    super("ConsoleLogOtelBridge", null, null, true, Property.EMPTY_ARRAY);
 
     this.otelLogger = otelLogger;
   }

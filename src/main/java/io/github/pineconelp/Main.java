@@ -12,7 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
   private OpenTelemetrySdk otelSdk;
-  private OtelBridge appender;
+  private ConsoleLogOtelBridge appender;
 
   @Override
   public void onEnable() {
@@ -71,7 +71,7 @@ public class Main extends JavaPlugin {
 
     Logger otelLogger = otelSdk.getLogsBridge().get("console-otel-bridge");
 
-    appender = new OtelBridge(otelLogger);
+    appender = new ConsoleLogOtelBridge(otelLogger);
     appender.start();
 
     getServerConsoleLogger().addAppender(appender);
