@@ -5,6 +5,8 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.resources.Resource;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,7 +19,9 @@ public class Main extends JavaPlugin {
   @Override
   public void onEnable() {
     saveDefaultConfig();
-    startOtelBridge(getConfig().getString("otlp-endpoint", "http://localhost:4318/v1/logs"));
+    startOtelBridge(
+        getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs"),
+        getConfig().getString("service-name", "minecraft-server"));
   }
 
   @Override
@@ -46,7 +50,9 @@ public class Main extends JavaPlugin {
 
       onDisable();
       reloadConfig();
-      startOtelBridge(getConfig().getString("otlp-endpoint", "http://localhost:4318/v1/logs"));
+      startOtelBridge(
+          getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs"),
+          getConfig().getString("service-name", "minecraft-server"));
 
       sender.sendMessage("Reloaded McServerOtel.");
 
@@ -58,9 +64,14 @@ public class Main extends JavaPlugin {
     return true;
   }
 
-  private void startOtelBridge(String endpoint) {
+  private void startOtelBridge(String endpoint, String serviceName) {
+    Resource resource = Resource.getDefault().toBuilder()
+        .put(AttributeKey.stringKey("service.name"), serviceName)
+        .build();
+
     otelSdk = OpenTelemetrySdk.builder()
         .setLoggerProvider(SdkLoggerProvider.builder()
+            .setResource(resource)
             .addLogRecordProcessor(BatchLogRecordProcessor.builder(
                 OtlpHttpLogRecordExporter.builder()
                     .setEndpoint(endpoint)

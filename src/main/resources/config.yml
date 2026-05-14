@@ -1,1 +1,6 @@
-otlp-endpoint: "http://localhost:4318/v1/logs"
+service-name: "minecraft-server"
+
+logs:
+  otlp-endpoint: "http://localhost:4318/v1/logs"
+
+metrics:
