@@ -2,8 +2,6 @@
 .gradle/
 build/
 gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
 
 # Eclipse / jdtls
 .classpath
@@ -24,6 +22,3 @@ out/
 # Local config
 .env
 
-# Compiled
-*.class
-*.jar
