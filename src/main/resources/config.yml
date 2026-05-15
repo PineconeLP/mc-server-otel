@@ -10,6 +10,7 @@ metrics:
   export-interval-seconds: 60
   types:
     tps: true
+    log-count: true
     player-count: true
     entity-count: true
     loaded-chunks: true

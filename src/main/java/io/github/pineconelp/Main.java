@@ -15,6 +15,7 @@ import io.github.pineconelp.logs.ConsoleLogOtelBridge;
 import io.opentelemetry.api.metrics.Meter;
 import io.github.pineconelp.metrics.MinecraftMetric;
 import io.github.pineconelp.metrics.ChunksLoadedMetric;
+import io.github.pineconelp.metrics.LogCountMetric;
 import io.github.pineconelp.metrics.EntitiesLoadedMetric;
 import io.github.pineconelp.metrics.PlayersOnlineMetric;
 import io.github.pineconelp.metrics.ServerTpsMetric;
@@ -138,6 +139,7 @@ public class Main extends JavaPlugin {
       registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
       registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
       registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
+      registerMetricIfEnabled("metrics.types.log-count", new LogCountMetric(), meter);
     }
   }
 
