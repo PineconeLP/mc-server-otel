@@ -89,6 +89,9 @@ service:
 Point Prometheus at the collector's metrics endpoint:
 
 ```yaml
+global:
+  scrape_interval: 15s
+
 scrape_configs:
   - job_name: otel-collector
     static_configs:

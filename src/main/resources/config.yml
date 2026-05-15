@@ -1,13 +1,25 @@
+# The OTel resource service.name attribute attached to all exported telemetry.
+# Use this to identify which server the data is coming from.
 service-name: "minecraft-server"
 
 logs:
+  # Set to false to disable log forwarding entirely.
   enabled: true
+
+  # OTLP HTTP endpoint to send logs to.
   otlp-endpoint: "http://localhost:4318/v1/logs"
 
 metrics:
+  # Set to false to disable all metrics entirely.
   enabled: true
+
+  # OTLP HTTP endpoint to send metrics to.
   otlp-endpoint: "http://localhost:4318/v1/metrics"
+
+  # How often metrics are pushed to the collector, in seconds.
   export-interval-seconds: 60
+
+  # Individual metrics can be toggled on or off here.
   types:
     tps: true
     log-count: true
