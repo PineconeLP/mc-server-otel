@@ -5,6 +5,7 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -86,45 +87,58 @@ public class Main extends JavaPlugin {
   }
 
   private void startOtel() {
+    boolean logsEnabled = getConfig().getBoolean("logs.enabled", true);
+    boolean metricsEnabled = getConfig().getBoolean("metrics.enabled", true);
     String serviceName = getConfig().getString("service-name", "minecraft-server");
-    String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
-    String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
-    int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
 
     Resource resource = Resource.getDefault().toBuilder()
         .put(AttributeKey.stringKey("service.name"), serviceName)
         .build();
 
-    otelSdk = OpenTelemetrySdk.builder()
-        .setLoggerProvider(SdkLoggerProvider.builder()
-            .setResource(resource)
-            .addLogRecordProcessor(BatchLogRecordProcessor.builder(
-                OtlpHttpLogRecordExporter.builder()
-                    .setEndpoint(logsEndpoint)
-                    .build())
-                .build())
-            .build())
-        .setMeterProvider(SdkMeterProvider.builder()
-            .setResource(resource)
-            .registerMetricReader(PeriodicMetricReader.builder(
-                OtlpHttpMetricExporter.builder()
-                    .setEndpoint(metricsEndpoint)
-                    .build())
-                .setInterval(metricsInterval, TimeUnit.SECONDS)
-                .build())
-            .build())
-        .build();
+    OpenTelemetrySdkBuilder sdkBuilder = OpenTelemetrySdk.builder();
 
-    Logger otelLogger = otelSdk.getLogsBridge().get("console-otel-bridge");
-    appender = new ConsoleLogOtelBridge(otelLogger);
-    appender.start();
-    getServerConsoleLogger().addAppender(appender);
+    if (logsEnabled) {
+      String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
+      sdkBuilder.setLoggerProvider(SdkLoggerProvider.builder()
+          .setResource(resource)
+          .addLogRecordProcessor(BatchLogRecordProcessor.builder(
+              OtlpHttpLogRecordExporter.builder()
+                  .setEndpoint(logsEndpoint)
+                  .build())
+              .build())
+          .build());
+    }
 
-    Meter meter = otelSdk.getMeter("mc-server-otel");
-    registerMetricIfEnabled("metrics.types.player-count", new PlayersOnlineMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
+    if (metricsEnabled) {
+      String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
+      int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
+      sdkBuilder.setMeterProvider(SdkMeterProvider.builder()
+          .setResource(resource)
+          .registerMetricReader(PeriodicMetricReader.builder(
+              OtlpHttpMetricExporter.builder()
+                  .setEndpoint(metricsEndpoint)
+                  .build())
+              .setInterval(metricsInterval, TimeUnit.SECONDS)
+              .build())
+          .build());
+    }
+
+    otelSdk = sdkBuilder.build();
+
+    if (logsEnabled) {
+      Logger otelLogger = otelSdk.getLogsBridge().get("console-otel-bridge");
+      appender = new ConsoleLogOtelBridge(otelLogger);
+      appender.start();
+      getServerConsoleLogger().addAppender(appender);
+    }
+
+    if (metricsEnabled) {
+      Meter meter = otelSdk.getMeter("mc-server-otel");
+      registerMetricIfEnabled("metrics.types.player-count", new PlayersOnlineMetric(this), meter);
+      registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
+      registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
+      registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
+    }
   }
 
   private void registerMetricIfEnabled(String configKey, MinecraftMetric metric, Meter meter) {

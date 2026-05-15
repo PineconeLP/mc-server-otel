@@ -1,9 +1,11 @@
 service-name: "minecraft-server"
 
 logs:
+  enabled: true
   otlp-endpoint: "http://localhost:4318/v1/logs"
 
 metrics:
+  enabled: true
   otlp-endpoint: "http://localhost:4318/v1/metrics"
   export-interval-seconds: 60
   types:
