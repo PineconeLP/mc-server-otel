@@ -1,6 +1,7 @@
 package io.github.pineconelp;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
@@ -20,6 +21,7 @@ public class Main extends JavaPlugin {
   private OpenTelemetrySdk otelSdk;
   private ConsoleLogOtelBridge appender;
   private ObservableDoubleGauge playerCountGauge;
+  private ObservableDoubleGauge tpsGauge;
 
   @Override
   public void onEnable() {
@@ -32,6 +34,11 @@ public class Main extends JavaPlugin {
     if (playerCountGauge != null) {
       playerCountGauge.close();
       playerCountGauge = null;
+    }
+
+    if (tpsGauge != null) {
+      tpsGauge.close();
+      tpsGauge = null;
     }
 
     if (appender != null) {
@@ -76,6 +83,7 @@ public class Main extends JavaPlugin {
     String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
     int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
     boolean playerCountEnabled = getConfig().getBoolean("metrics.types.player-count", true);
+    boolean tpsEnabled = getConfig().getBoolean("metrics.types.tps", true);
 
     Resource resource = Resource.getDefault().toBuilder()
         .put(AttributeKey.stringKey("service.name"), serviceName)
@@ -115,6 +123,20 @@ public class Main extends JavaPlugin {
           .setUnit("{players}")
           .buildWithCallback(measurement ->
               measurement.record(getServer().getOnlinePlayers().size()));
+    }
+
+    if (tpsEnabled) {
+      AttributeKey<String> windowKey = AttributeKey.stringKey("window");
+      tpsGauge = otelSdk.getMeter("mc-server-otel")
+          .gaugeBuilder("minecraft.server.tps")
+          .setDescription("Server ticks per second")
+          .setUnit("{tps}")
+          .buildWithCallback(measurement -> {
+            double[] tps = getServer().getTPS();
+            measurement.record(tps[0], Attributes.of(windowKey, "1m"));
+            measurement.record(tps[1], Attributes.of(windowKey, "5m"));
+            measurement.record(tps[2], Attributes.of(windowKey, "15m"));
+          });
     }
   }
 

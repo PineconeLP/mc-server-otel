@@ -8,3 +8,4 @@ metrics:
   export-interval-seconds: 60
   types:
     player-count: true
+    tps: true
