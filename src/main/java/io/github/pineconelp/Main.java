@@ -1,9 +1,7 @@
 package io.github.pineconelp;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -12,34 +10,42 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
+import io.github.pineconelp.logs.ConsoleLogOtelBridge;
+import io.opentelemetry.api.metrics.Meter;
+import io.github.pineconelp.metrics.MinecraftMetric;
+import io.github.pineconelp.metrics.PlayerCountMetric;
+import io.github.pineconelp.metrics.TpsMetric;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 public class Main extends JavaPlugin {
+  private final List<MinecraftMetric> activeMetrics;
+
   private OpenTelemetrySdk otelSdk;
   private ConsoleLogOtelBridge appender;
-  private ObservableDoubleGauge playerCountGauge;
-  private ObservableDoubleGauge tpsGauge;
+
+  public Main() {
+    super();
+
+    activeMetrics = new ArrayList<>();
+  }
 
   @Override
   public void onEnable() {
     saveDefaultConfig();
-    startOtelBridge();
+    startOtel();
   }
 
   @Override
   public void onDisable() {
-    if (playerCountGauge != null) {
-      playerCountGauge.close();
-      playerCountGauge = null;
-    }
-
-    if (tpsGauge != null) {
-      tpsGauge.close();
-      tpsGauge = null;
-    }
+    activeMetrics.forEach(MinecraftMetric::close);
+    activeMetrics.clear();
 
     if (appender != null) {
       getServerConsoleLogger().removeAppender(appender);
@@ -65,7 +71,7 @@ public class Main extends JavaPlugin {
 
       onDisable();
       reloadConfig();
-      startOtelBridge();
+      startOtel();
 
       sender.sendMessage("Reloaded McServerOtel.");
 
@@ -77,13 +83,11 @@ public class Main extends JavaPlugin {
     return true;
   }
 
-  private void startOtelBridge() {
+  private void startOtel() {
     String serviceName = getConfig().getString("service-name", "minecraft-server");
     String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
     String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
     int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
-    boolean playerCountEnabled = getConfig().getBoolean("metrics.types.player-count", true);
-    boolean tpsEnabled = getConfig().getBoolean("metrics.types.tps", true);
 
     Resource resource = Resource.getDefault().toBuilder()
         .put(AttributeKey.stringKey("service.name"), serviceName)
@@ -104,39 +108,25 @@ public class Main extends JavaPlugin {
                 OtlpHttpMetricExporter.builder()
                     .setEndpoint(metricsEndpoint)
                     .build())
-                .setInterval(metricsInterval, java.util.concurrent.TimeUnit.SECONDS)
+                .setInterval(metricsInterval, TimeUnit.SECONDS)
                 .build())
             .build())
         .build();
 
     Logger otelLogger = otelSdk.getLogsBridge().get("console-otel-bridge");
-
     appender = new ConsoleLogOtelBridge(otelLogger);
     appender.start();
-
     getServerConsoleLogger().addAppender(appender);
 
-    if (playerCountEnabled) {
-      playerCountGauge = otelSdk.getMeter("mc-server-otel")
-          .gaugeBuilder("minecraft.players.online")
-          .setDescription("Number of players currently online")
-          .setUnit("{players}")
-          .buildWithCallback(measurement ->
-              measurement.record(getServer().getOnlinePlayers().size()));
-    }
+    Meter meter = otelSdk.getMeter("mc-server-otel");
+    registerMetricIfEnabled("metrics.types.player-count", new PlayerCountMetric(this), meter);
+    registerMetricIfEnabled("metrics.types.tps", new TpsMetric(this), meter);
+  }
 
-    if (tpsEnabled) {
-      AttributeKey<String> windowKey = AttributeKey.stringKey("window");
-      tpsGauge = otelSdk.getMeter("mc-server-otel")
-          .gaugeBuilder("minecraft.server.tps")
-          .setDescription("Server ticks per second")
-          .setUnit("{tps}")
-          .buildWithCallback(measurement -> {
-            double[] tps = getServer().getTPS();
-            measurement.record(tps[0], Attributes.of(windowKey, "1m"));
-            measurement.record(tps[1], Attributes.of(windowKey, "5m"));
-            measurement.record(tps[2], Attributes.of(windowKey, "15m"));
-          });
+  private void registerMetricIfEnabled(String configKey, MinecraftMetric metric, Meter meter) {
+    if (getConfig().getBoolean(configKey, true)) {
+      metric.register(meter);
+      activeMetrics.add(metric);
     }
   }
 

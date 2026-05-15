@@ -1,4 +1,4 @@
-package io.github.pineconelp;
+package io.github.pineconelp.logs;
 
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
@@ -9,12 +9,11 @@ import org.apache.logging.log4j.core.config.Property;
 
 import java.util.concurrent.TimeUnit;
 
-class ConsoleLogOtelBridge extends AbstractAppender {
+public class ConsoleLogOtelBridge extends AbstractAppender {
   private final Logger otelLogger;
 
   public ConsoleLogOtelBridge(Logger otelLogger) {
     super("ConsoleLogOtelBridge", null, null, true, Property.EMPTY_ARRAY);
-
     this.otelLogger = otelLogger;
   }
 
