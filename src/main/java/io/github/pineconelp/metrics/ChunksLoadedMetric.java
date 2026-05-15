@@ -6,18 +6,18 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class LoadedChunkMetric implements MinecraftMetric {
+public class ChunksLoadedMetric implements MinecraftMetric {
   private final JavaPlugin plugin;
   private ObservableDoubleGauge gauge;
 
-  public LoadedChunkMetric(JavaPlugin plugin) {
+  public ChunksLoadedMetric(JavaPlugin plugin) {
     this.plugin = plugin;
   }
 
   @Override
   public void register(Meter meter) {
     AttributeKey<String> worldKey = AttributeKey.stringKey("world");
-    gauge = meter.gaugeBuilder("minecraft.chunks.loaded")
+    gauge = meter.gaugeBuilder("minecraft.chunks.loaded.count")
         .setDescription("Number of loaded chunks per world")
         .setUnit("{chunks}")
         .buildWithCallback(measurement ->

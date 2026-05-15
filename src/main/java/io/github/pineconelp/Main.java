@@ -13,10 +13,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.github.pineconelp.logs.ConsoleLogOtelBridge;
 import io.opentelemetry.api.metrics.Meter;
 import io.github.pineconelp.metrics.MinecraftMetric;
-import io.github.pineconelp.metrics.EntityCountMetric;
-import io.github.pineconelp.metrics.LoadedChunkMetric;
-import io.github.pineconelp.metrics.PlayerCountMetric;
-import io.github.pineconelp.metrics.TpsMetric;
+import io.github.pineconelp.metrics.ChunksLoadedMetric;
+import io.github.pineconelp.metrics.EntitiesLoadedMetric;
+import io.github.pineconelp.metrics.PlayersOnlineMetric;
+import io.github.pineconelp.metrics.ServerTpsMetric;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -121,10 +121,10 @@ public class Main extends JavaPlugin {
     getServerConsoleLogger().addAppender(appender);
 
     Meter meter = otelSdk.getMeter("mc-server-otel");
-    registerMetricIfEnabled("metrics.types.player-count", new PlayerCountMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.tps", new TpsMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.entity-count", new EntityCountMetric(this), meter);
-    registerMetricIfEnabled("metrics.types.loaded-chunks", new LoadedChunkMetric(this), meter);
+    registerMetricIfEnabled("metrics.types.player-count", new PlayersOnlineMetric(this), meter);
+    registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
+    registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
+    registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
   }
 
   private void registerMetricIfEnabled(String configKey, MinecraftMetric metric, Meter meter) {

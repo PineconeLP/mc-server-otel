@@ -4,11 +4,11 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class TpsMetric implements MinecraftMetric {
+public class ServerTpsMetric implements MinecraftMetric {
   private final JavaPlugin plugin;
   private ObservableDoubleGauge gauge;
 
-  public TpsMetric(JavaPlugin plugin) {
+  public ServerTpsMetric(JavaPlugin plugin) {
     this.plugin = plugin;
   }
 

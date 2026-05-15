@@ -6,18 +6,18 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class EntityCountMetric implements MinecraftMetric {
+public class EntitiesLoadedMetric implements MinecraftMetric {
   private final JavaPlugin plugin;
   private ObservableDoubleGauge gauge;
 
-  public EntityCountMetric(JavaPlugin plugin) {
+  public EntitiesLoadedMetric(JavaPlugin plugin) {
     this.plugin = plugin;
   }
 
   @Override
   public void register(Meter meter) {
     AttributeKey<String> worldKey = AttributeKey.stringKey("world");
-    gauge = meter.gaugeBuilder("minecraft.entities")
+    gauge = meter.gaugeBuilder("minecraft.entities.loaded.count")
         .setDescription("Number of entities per world")
         .setUnit("{entities}")
         .buildWithCallback(measurement ->

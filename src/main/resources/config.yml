@@ -7,7 +7,7 @@ metrics:
   otlp-endpoint: "http://localhost:4318/v1/metrics"
   export-interval-seconds: 60
   types:
-    player-count: true
     tps: true
+    player-count: true
     entity-count: true
     loaded-chunks: true
