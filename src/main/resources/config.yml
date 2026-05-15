@@ -9,3 +9,5 @@ metrics:
   types:
     player-count: true
     tps: true
+    entity-count: true
+    loaded-chunks: true

@@ -17,8 +17,7 @@ public class TpsMetric implements MinecraftMetric {
     gauge = meter.gaugeBuilder("minecraft.server.tps")
         .setDescription("Server ticks per second")
         .setUnit("{tps}")
-        .buildWithCallback(measurement ->
-            measurement.record(plugin.getServer().getTPS()[0]));
+        .buildWithCallback(measurement -> measurement.record(plugin.getServer().getTPS()[0]));
   }
 
   @Override
