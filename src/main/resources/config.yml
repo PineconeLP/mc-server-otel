@@ -22,6 +22,8 @@ metrics:
   # Individual metrics can be toggled on or off here.
   types:
     tps: true
+    process-cpu-usage: true
+    system-cpu-usage: true
     log-count: true
     player-count: true
     entity-count: true

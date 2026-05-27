@@ -18,7 +18,9 @@ import io.github.pineconelp.metrics.ChunksLoadedMetric;
 import io.github.pineconelp.metrics.LogCountMetric;
 import io.github.pineconelp.metrics.EntitiesLoadedMetric;
 import io.github.pineconelp.metrics.PlayersOnlineMetric;
+import io.github.pineconelp.metrics.ProcessCpuUsageMetric;
 import io.github.pineconelp.metrics.ServerTpsMetric;
+import io.github.pineconelp.metrics.SystemCpuUsageMetric;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -140,6 +142,8 @@ public class Main extends JavaPlugin {
       registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
       registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
       registerMetricIfEnabled("metrics.types.log-count", new LogCountMetric(), meter);
+      registerMetricIfEnabled("metrics.types.process-cpu-usage", new ProcessCpuUsageMetric(), meter);
+      registerMetricIfEnabled("metrics.types.system-cpu-usage", new SystemCpuUsageMetric(), meter);
     }
   }
 

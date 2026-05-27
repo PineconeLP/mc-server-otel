@@ -21,4 +21,4 @@ out/
 
 # Local config
 .env
-
+scripts/
