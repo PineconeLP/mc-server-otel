@@ -24,6 +24,8 @@ metrics:
     tps: true
     process-cpu-usage: true
     system-cpu-usage: true
+    process-memory-usage: true
+    system-memory-usage: true
     log-count: true
     player-count: true
     entity-count: true

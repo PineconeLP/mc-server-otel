@@ -19,8 +19,10 @@ import io.github.pineconelp.metrics.LogCountMetric;
 import io.github.pineconelp.metrics.EntitiesLoadedMetric;
 import io.github.pineconelp.metrics.PlayersOnlineMetric;
 import io.github.pineconelp.metrics.ProcessCpuUsageMetric;
+import io.github.pineconelp.metrics.ProcessMemoryUsageMetric;
 import io.github.pineconelp.metrics.ServerTpsMetric;
 import io.github.pineconelp.metrics.SystemCpuUsageMetric;
+import io.github.pineconelp.metrics.SystemMemoryUsageMetric;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -144,6 +146,8 @@ public class Main extends JavaPlugin {
       registerMetricIfEnabled("metrics.types.log-count", new LogCountMetric(), meter);
       registerMetricIfEnabled("metrics.types.process-cpu-usage", new ProcessCpuUsageMetric(), meter);
       registerMetricIfEnabled("metrics.types.system-cpu-usage", new SystemCpuUsageMetric(), meter);
+      registerMetricIfEnabled("metrics.types.process-memory-usage", new ProcessMemoryUsageMetric(), meter);
+      registerMetricIfEnabled("metrics.types.system-memory-usage", new SystemMemoryUsageMetric(), meter);
     }
   }
 
