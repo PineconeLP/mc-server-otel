@@ -22,6 +22,7 @@ metrics:
   # Individual metrics can be toggled on or off here.
   types:
     tps: true
+    mspt: true
     process-cpu-usage: true
     system-cpu-usage: true
     process-memory-usage: true

@@ -20,6 +20,7 @@ import io.github.pineconelp.metrics.EntitiesLoadedMetric;
 import io.github.pineconelp.metrics.PlayersOnlineMetric;
 import io.github.pineconelp.metrics.ProcessCpuUsageMetric;
 import io.github.pineconelp.metrics.ProcessMemoryUsageMetric;
+import io.github.pineconelp.metrics.ServerMsptMetric;
 import io.github.pineconelp.metrics.ServerTpsMetric;
 import io.github.pineconelp.metrics.SystemCpuUsageMetric;
 import io.github.pineconelp.metrics.SystemMemoryUsageMetric;
@@ -141,6 +142,7 @@ public class Main extends JavaPlugin {
       Meter meter = otelSdk.getMeter("mc-server-otel");
       registerMetricIfEnabled("metrics.types.player-count", new PlayersOnlineMetric(this), meter);
       registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
+      registerMetricIfEnabled("metrics.types.mspt", new ServerMsptMetric(this), meter);
       registerMetricIfEnabled("metrics.types.entity-count", new EntitiesLoadedMetric(this), meter);
       registerMetricIfEnabled("metrics.types.loaded-chunks", new ChunksLoadedMetric(this), meter);
       registerMetricIfEnabled("metrics.types.log-count", new LogCountMetric(), meter);
