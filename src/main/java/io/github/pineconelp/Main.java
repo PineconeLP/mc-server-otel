@@ -23,6 +23,7 @@ import io.github.pineconelp.metrics.ProcessMemoryUsageMetric;
 import io.github.pineconelp.metrics.ServerMsptMetric;
 import io.github.pineconelp.metrics.ServerTpsMetric;
 import io.github.pineconelp.metrics.SystemCpuUsageMetric;
+import io.github.pineconelp.metrics.SystemFilesystemUsageMetric;
 import io.github.pineconelp.metrics.SystemMemoryUsageMetric;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.Command;
@@ -150,6 +151,7 @@ public class Main extends JavaPlugin {
       registerMetricIfEnabled("metrics.types.system-cpu-usage", new SystemCpuUsageMetric(), meter);
       registerMetricIfEnabled("metrics.types.process-memory-usage", new ProcessMemoryUsageMetric(), meter);
       registerMetricIfEnabled("metrics.types.system-memory-usage", new SystemMemoryUsageMetric(), meter);
+      registerMetricIfEnabled("metrics.types.system-filesystem-usage", new SystemFilesystemUsageMetric(), meter);
     }
   }
 

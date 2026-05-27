@@ -59,6 +59,7 @@ All metrics include a `service.name` resource attribute matching the `service-na
 | `system.cpu.utilization` | CPU in use across the whole system (0.0–1.0) | — |
 | `process.memory.usage` | JVM heap memory in use by the Minecraft server process | — |
 | `system.memory.usage` | Physical RAM in use across the whole system | — |
+| `system.filesystem.usage` | Disk space per filesystem mount point | `system.filesystem.mountpoint`, `system.filesystem.state`: `used`, `free` |
 
 ## Collector Setup
 

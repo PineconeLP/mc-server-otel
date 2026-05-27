@@ -27,6 +27,7 @@ metrics:
     system-cpu-usage: true
     process-memory-usage: true
     system-memory-usage: true
+    system-filesystem-usage: true
     log-count: true
     player-count: true
     entity-count: true
