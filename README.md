@@ -50,10 +50,15 @@ All metrics include a `service.name` resource attribute matching the `service-na
 | Metric | Description | Attributes |
 |--------|-------------|------------|
 | `minecraft.server.tps` | Server ticks per second | `window`: `1m`, `5m`, `15m` |
+| `minecraft.server.mspt` | Average milliseconds per tick | — |
 | `minecraft.logs.count` | Number of log event count by severity | `severity` |
 | `minecraft.players.online.count` | Number of players currently online | — |
 | `minecraft.entities.loaded.count` | Number of loaded entities per world | `world` |
 | `minecraft.chunks.loaded.count` | Number of loaded chunks per world | `world` |
+| `process.cpu.utilization` | CPU in use by the Minecraft server process (0.0–1.0) | — |
+| `system.cpu.utilization` | CPU in use across the whole system (0.0–1.0) | — |
+| `process.memory.usage` | JVM heap memory in use by the Minecraft server process | — |
+| `system.memory.usage` | Physical RAM in use across the whole system | — |
 
 ## Collector Setup
 
