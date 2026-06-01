@@ -20,6 +20,10 @@ metrics:
   # OTLP HTTP endpoint to send metrics to.
   otlp-endpoint: "http://localhost:4318/v1/metrics"
 
+  # Optional Basic auth credentials for the metrics endpoint.
+  # username: ""
+  # password: ""
+
   # How often metrics are pushed to the collector, in seconds.
   export-interval-seconds: 60
 

@@ -4,6 +4,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -130,13 +131,22 @@ public class Main extends JavaPlugin {
     if (metricsEnabled) {
       String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
       int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
+      String metricsUsername = getConfig().getString("metrics.username", null);
+      String metricsPassword = getConfig().getString("metrics.password", null);
+
+      OtlpHttpMetricExporterBuilder metricsExporterBuilder = OtlpHttpMetricExporter.builder()
+          .setEndpoint(metricsEndpoint);
+
+      if (metricsUsername != null && metricsPassword != null) {
+        String encoded = Base64
+            .getEncoder()
+            .encodeToString((metricsUsername + ":" + metricsPassword).getBytes());
+        metricsExporterBuilder.addHeader("Authorization", "Basic " + encoded);
+      }
 
       sdkBuilder.setMeterProvider(SdkMeterProvider.builder()
           .setResource(resource)
-          .registerMetricReader(PeriodicMetricReader.builder(
-              OtlpHttpMetricExporter.builder()
-                  .setEndpoint(metricsEndpoint)
-                  .build())
+          .registerMetricReader(PeriodicMetricReader.builder(metricsExporterBuilder.build())
               .setInterval(metricsInterval, TimeUnit.SECONDS)
               .build())
           .build());
