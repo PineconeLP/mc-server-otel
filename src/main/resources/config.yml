@@ -9,9 +9,10 @@ logs:
   # OTLP HTTP endpoint to send logs to.
   otlp-endpoint: "http://localhost:4318/v1/logs"
 
-  # Optional Basic auth credentials for the logs endpoint.
-  # username: ""
-  # password: ""
+  # Optional auth credentials for the logs endpoint.
+  # basic-auth:
+  #   username: ""
+  #   password: ""
 
 metrics:
   # Set to false to disable all metrics entirely.
@@ -20,9 +21,10 @@ metrics:
   # OTLP HTTP endpoint to send metrics to.
   otlp-endpoint: "http://localhost:4318/v1/metrics"
 
-  # Optional Basic auth credentials for the metrics endpoint.
-  # username: ""
-  # password: ""
+  # Optional auth credentials for the metrics endpoint.
+  # basic-auth:
+  #   username: ""
+  #   password: ""
 
   # How often metrics are pushed to the collector, in seconds.
   export-interval-seconds: 60

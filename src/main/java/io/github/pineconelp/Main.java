@@ -108,8 +108,8 @@ public class Main extends JavaPlugin {
 
     if (logsEnabled) {
       String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
-      String logsUsername = getConfig().getString("logs.username", null);
-      String logsPassword = getConfig().getString("logs.password", null);
+      String logsUsername = getConfig().getString("logs.basic-auth.username", null);
+      String logsPassword = getConfig().getString("logs.basic-auth.password", null);
 
       OtlpHttpLogRecordExporterBuilder logsExporterBuilder = OtlpHttpLogRecordExporter
           .builder()
@@ -131,8 +131,8 @@ public class Main extends JavaPlugin {
     if (metricsEnabled) {
       String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
       int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
-      String metricsUsername = getConfig().getString("metrics.username", null);
-      String metricsPassword = getConfig().getString("metrics.password", null);
+      String metricsUsername = getConfig().getString("metrics.basic-auth.username", null);
+      String metricsPassword = getConfig().getString("metrics.basic-auth.password", null);
 
       OtlpHttpMetricExporterBuilder metricsExporterBuilder = OtlpHttpMetricExporter.builder()
           .setEndpoint(metricsEndpoint);
