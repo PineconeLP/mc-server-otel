@@ -9,6 +9,10 @@ logs:
   # OTLP HTTP endpoint to send logs to.
   otlp-endpoint: "http://localhost:4318/v1/logs"
 
+  # Optional Basic auth credentials for the logs endpoint.
+  # username: ""
+  # password: ""
+
 metrics:
   # Set to false to disable all metrics entirely.
   enabled: true

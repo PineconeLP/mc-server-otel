@@ -2,6 +2,7 @@ package io.github.pineconelp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
@@ -30,6 +31,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -105,19 +107,30 @@ public class Main extends JavaPlugin {
 
     if (logsEnabled) {
       String logsEndpoint = getConfig().getString("logs.otlp-endpoint", "http://localhost:4318/v1/logs");
+      String logsUsername = getConfig().getString("logs.username", null);
+      String logsPassword = getConfig().getString("logs.password", null);
+
+      OtlpHttpLogRecordExporterBuilder logsExporterBuilder = OtlpHttpLogRecordExporter
+          .builder()
+          .setEndpoint(logsEndpoint);
+
+      if (logsUsername != null && logsPassword != null) {
+        String encoded = Base64
+            .getEncoder()
+            .encodeToString((logsUsername + ":" + logsPassword).getBytes());
+        logsExporterBuilder.addHeader("Authorization", "Basic " + encoded);
+      }
+
       sdkBuilder.setLoggerProvider(SdkLoggerProvider.builder()
           .setResource(resource)
-          .addLogRecordProcessor(BatchLogRecordProcessor.builder(
-              OtlpHttpLogRecordExporter.builder()
-                  .setEndpoint(logsEndpoint)
-                  .build())
-              .build())
+          .addLogRecordProcessor(BatchLogRecordProcessor.builder(logsExporterBuilder.build()).build())
           .build());
     }
 
     if (metricsEnabled) {
       String metricsEndpoint = getConfig().getString("metrics.otlp-endpoint", "http://localhost:4318/v1/metrics");
       int metricsInterval = getConfig().getInt("metrics.export-interval-seconds", 60);
+
       sdkBuilder.setMeterProvider(SdkMeterProvider.builder()
           .setResource(resource)
           .registerMetricReader(PeriodicMetricReader.builder(
@@ -143,6 +156,7 @@ public class Main extends JavaPlugin {
 
     if (metricsEnabled) {
       Meter meter = otelSdk.getMeter("mc-server-otel");
+
       registerMetricIfEnabled("metrics.types.player-count", new PlayersOnlineMetric(this), meter);
       registerMetricIfEnabled("metrics.types.tps", new ServerTpsMetric(this), meter);
       registerMetricIfEnabled("metrics.types.mspt", new ServerMsptMetric(this), meter);
