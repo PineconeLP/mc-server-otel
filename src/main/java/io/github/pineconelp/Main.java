@@ -1,7 +1,6 @@
 package io.github.pineconelp;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -11,7 +10,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
-import io.github.pineconelp.logs.ConsoleLogOtelBridge;
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 import io.opentelemetry.api.metrics.Meter;
 import io.github.pineconelp.metrics.MinecraftMetric;
 import io.github.pineconelp.metrics.ChunksLoadedMetric;
@@ -38,7 +37,7 @@ public class Main extends JavaPlugin {
   private final List<MinecraftMetric> activeMetrics;
 
   private OpenTelemetrySdk otelSdk;
-  private ConsoleLogOtelBridge appender;
+  private OpenTelemetryAppender appender;
 
   public Main() {
     super();
@@ -133,8 +132,11 @@ public class Main extends JavaPlugin {
     otelSdk = sdkBuilder.build();
 
     if (logsEnabled) {
-      Logger otelLogger = otelSdk.getLogsBridge().get("console-otel-bridge");
-      appender = new ConsoleLogOtelBridge(otelLogger);
+      appender = OpenTelemetryAppender.builder()
+          .setName("OpenTelemetryLog4j")
+          .setCaptureMapMessageAttributes(true)
+          .setOpenTelemetry(otelSdk)
+          .build();
       appender.start();
       getServerConsoleLogger().addAppender(appender);
     }
